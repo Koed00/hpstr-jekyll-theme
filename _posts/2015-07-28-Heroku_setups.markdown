@@ -162,7 +162,7 @@ That's really all there is to it. Now you can deploy and enjoy it.
 #### uWSGI
 The same deal as with gunicorn; we chain the buildpack start commands and have uWSGI report to the Nginx socket.
 Here I'm using the `hook-accepting1` hook, which is called when the first uWSGI worker is accepting connections.
-Two thumbs up for uWSGI for making it easy to execute `touch` or any other external command. uWSGI'a many configuration options can be a bit daunting for the first time user, but it can be a great tool to tune your application server for a specific task.
+Two thumbs up for uWSGI for making it easy to execute `touch` or any other external command. Its many configuration options can be a bit daunting for the first time user, but it can be a great tool to tune your application server for a specific task.
 This is a basic configuration I know works well with Django and Heroku:  
 
 {% highlight bash %}
