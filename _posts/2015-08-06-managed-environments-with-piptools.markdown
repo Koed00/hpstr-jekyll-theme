@@ -109,7 +109,7 @@ $ pip-sync requirements.txt dev-requirements.txt
 ### Dependency management
 
 Let us assume I've decided that `django-debug-toolbar` is a great development package but I don't want to use it on my servers. Normally you would run `$ pip uninstall djang-debug-toolbar` and remove the entry from your `requirements.txt` file manually. Unfortunately this doesn't remove the `sqlparse` package, unless you remembered, and months later you'll be wondering why it is in your requirements file.
-With `pip-tools` this process is a lot cleaner. All we do is remove the `django-debug-toolbar` entry from the 'requirements.in' file and run `$ pip-compile` again.
+With `pip-tools` this process is a lot cleaner. All we do is remove the `django-debug-toolbar` entry from the `requirements.in` file and run `$ pip-compile` again.
 
 {% highlight python%}
 # requirements.txt
