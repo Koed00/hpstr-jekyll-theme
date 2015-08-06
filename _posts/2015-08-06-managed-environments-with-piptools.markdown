@@ -16,10 +16,10 @@ date: "2015-08-06"
 
 A new version of `pip-tools` was recently released and it brings with it a much cleaner work-flow to manage your Python virtual environments.
 
-I'm assuming you are using virtual environments for your Python and Django projects. If not you should look up some of the excellent guides on the Internet on how to get the best out of [virtualenv](https://virtualenv.pypa.io/en/latest/), [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/) or my personal favorite [virtualfish](https://github.com/adambrenecki/virtualfish/) for [Fish](http://fishshell.com/).
+I'm assuming you are using virtual environments for your Python and Django projects. If not you should look up some of the excellent guides on the Internet on how to get started with [virtualenv](https://virtualenv.pypa.io/en/latest/), [virtualenvwrapper](https://virtualenvwrapper.readthedocs.org/en/latest/) or my personal favorite [virtualfish](https://github.com/adambrenecki/virtualfish/) for [Fish](http://fishshell.com/).
 
 ## Package management
-One of the problems with Python development is always package management, especially when you use Django and you keep adding more apps to your project. Those applications will install dependencies and at some point you won't remember what those were anymore. Each of those packages adds up to the size of your virtual environment. This is not a big deal if you are just developing locally, but once you start using hosting platforms you quickly find out that every megabyte of your project counts. For example, when you run a wsgi server that uses forking chances are that each fork will load your Django environment in memory. Now multiply that by the amount of workers you have set up and you see how a few megabytes more or less can make a big difference. If you author open-source projects, and you should, it's also nice to not inadvertently list a bunch of unnecessary packages.
+One of the problems you encounter with Python development is always package management, especially when you use Django and you keep adding cool new apps to your project. Those applications will install dependencies and at some point you won't remember what those were anymore. Each of those packages adds up to the size of your virtual environment. This is not a big deal if you are just developing locally, but once you start using hosting platforms you quickly find out that every megabyte of your project counts. For example when you run a wsgi server that uses forking, chances are that each fork will load your Django environment in memory. Now multiply that by the amount of workers you have set up and you see how a few megabytes more or less can make a big difference. If you author open-source projects, and you should, it's also nice to not inadvertently list a bunch of unnecessary packages.
 
 ## Pip tools
 [Vincent Driessen](https://github.com/nvie/)'s [pip-tools](https://github.com/nvie/pip-tools) package has been a long time favorite of many Python developer. The `pip-dump` and `pip-review` commands are a great way of creating requirement files and updating them. Now with version 1 finally released, it introduces two new commands `pip-compile` and `pip-sync` which previously were only available as a preview in the future branch of the repository.
@@ -62,10 +62,10 @@ six==1.9.0                # via django-extensions
 sqlparse==0.1.16          # via django-debug-toolbar
 {% endhighlight %}
 
-As you can see `pip-compile` neatly pinned all the packages and their own requirements. Marking all the child dependencies with their parents. Now you know exactly why e.g.`sqlparse` is installed or `six` and by which package. If you still wonder why you should be pinning your requirements like this, you can read about it in this [article](http://nvie.com/posts/better-package-management/) by the pip-tools author himself.
+As you can see `pip-compile` neatly pinned all the packages and their own requirements. Marking all the child dependencies with their parents where needed. Now you know exactly why e.g.`sqlparse` is installed or `six` and by which package. If you still wonder why you should be pinning your requirements like this, you can read about it in this [article](http://nvie.com/posts/better-package-management/) by the pip-tools author himself.
 
 ## Development requirements
-Often I'll use some extra packages for development that I don't want included in the `requirements.txt` file cause they will neither be used in staging or production. So let's create a `dev-requirements.in`
+Often I'll use some extra packages for development that I don't want included in the `requirements.txt` file cause they will neither be used in staging or production. However I do switch working environments a lot, so it's nice to not have to install all the stuff I need to start work from memory. So let's create a `dev-requirements.in` file:
 {% highlight python %}
 # dev-requirements.in
 pytest
@@ -93,10 +93,10 @@ pytest==2.7.2
 requests==2.7.0           # via bpython
 six==1.9.0                # via bpython
 {% endhighlight %}
-Most software will only look for a `requirements.txt` file to install dependencies, so this is a great way of keeping these packages out of your Heroku dynos or similar platforms while still managing your environment.
+Most software will only look for a `requirements.txt` file to install dependencies, so this is a great way of keeping these packages out of your Heroku dynos or similar platforms while still managing your development environment.
 
 ## Pip sync
-Until now we haven't installed anything yet in our virtualenv. We could simpy do `$ pip install -r requirements.txt` but what if there are already packages previously installed?. The new `pip-sync` command takes care of this. It not only installs your requirements, it also removes anything that is not defined in your requirement files. You'll soon find out if you forgot to list a crucial package in the `.in` files.
+Until now we haven't installed anything yet in our virtualenv. We could simpy do `$ pip install -r requirements.txt` but what if there are already packages previously installed? The new `pip-sync` command takes care of this. It not only installs your dependencies, it also removes anything that is not defined in your requirement files. You'll soon find out if you forgot to list a crucial package in the `.in` files.
 
 Let's run:
 {% highlight bash %}
@@ -106,7 +106,7 @@ $ pip-sync requirements.txt dev-requirements.txt
 
 ## Dependency management
 
-Let's assume I've decided that `django-debug-toolbar` is a great development package but I don't want to use it on my servers. Normally you would run `$ pip uninstall djang-debug-toolbar` and remove the entry manually from your 'requirements.txt'. Unfortunately this doesn't remove the `sqlparse` package, unless you remembered, and months later you'll be wondering why it is in your requirements file.
+Let us assume I've decided that `django-debug-toolbar` is a great development package but I don't want to use it on my servers. Normally you would run `$ pip uninstall djang-debug-toolbar` and remove the entry from your `requirements.txt` file manually. Unfortunately this doesn't remove the `sqlparse` package, unless you remembered, and months later you'll be wondering why it is in your requirements file.
 With `pip-tools` this process is a lot cleaner. All we do is remove the `django-debug-toolbar` entry from the 'requirements.in' file and run `$ pip-compile` again.
 
 {% highlight python%}
@@ -127,7 +127,7 @@ six==1.9.0                # via django-extensions
 {% endhighlight %}
 
 As you can see both the toolbar and its sqlparse dependency are gone.
-Now we run `$ pip-sync requirements.txt dev-requirements.txt` again to actually un-install those packages from our environment. That's really all there is to it.
+Now we run `$ pip-sync requirements.txt dev-requirements.txt` to actually un-install those packages from our environment. That's really all there is to it.
 
 ## Package updates
 Once every while I will run `$ pip-compile` again so it will pick up any updated packages that have since been released. The same way I used to run `pip-review`, except I'll use `$ git diff` to show me if any packages have been updated or not. This is the only part that probably still needs a little love from the developers. If you're not using version control to show you something has changed, it can be very hard to tell if any of your requirements have had an update. Especially if all you wanted to do is remove a dependency. A little change report after a compile would make this a lot easier. It is still very early days for this new version though and updates have been coming out frequently.
